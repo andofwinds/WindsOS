@@ -11,27 +11,7 @@ bits 16
 jmp short start
 nop
 
-bdb_oem:                    db 'FWINDSOS'           ; 8 bytes
-bdb_bytes_per_sector:       dw 512     ;'
-bdb_sectors_per_cluster:    db 1
-bdb_reserved_sectors:       dw 1
-bdb_fat_count:              db 2
-bdb_dir_entries_count:      dw 0E0h
-bdb_total_sectors:          dw 2880                 ; 2880 * 512 = 1.44MB
-bdb_media_descriptor_type:  db 0F0h                 ; F0 = 3.5" floppy disk
-bdb_sectors_per_fat:        dw 9                    ; 9 sectors/fat
-bdb_sectors_per_track:      dw 18
-bdb_heads:                  dw 2
-bdb_hidden_sectors:         dd 0
-bdb_large_sector_count:     dd 0
-
-; extended boot record
-ebr_drive_number:           db 0                    ; 0x00 floppy, 0x80 hdd, useless
-                            db 0                    ; reserved
-ebr_signature:              db 29h
-ebr_volume_id:              db 12h, 34h, 56h, 78h   ; serial number, value doesn't matter
-ebr_volume_label:           db 'FORSAKEN OS'        ; 11 bytes, padded with spaces
-ebr_system_id:              db 'FAT12   ' ;'        ; 8 bytes
+%include "src/tools/bpb.asm"
 
 
 
@@ -48,6 +28,7 @@ start:
 
 
 ; ========================================SHELL============================================
+%include "src/tools/inpututils.asm"
 
 shell:
     mov si, msg_watershell_started
@@ -80,6 +61,7 @@ input_proc:
     je enter_secure
 
     mov ah, 0x0e
+    call to_upper_case
     int 0x10
     
     mov [input_buffer+bx], al
@@ -95,18 +77,7 @@ enter_secure:
     mov [current_file], si
     call load_file
 
-backspace:
-    cmp bx, 0
-    je input_proc
-    mov ah, 0x0e
-    int 0x10
-    mov al, ' '
-    int 0x10
-    mov al, 0x8
-    int 0x10
-    dec bx
-    mov byte [input_buffer+bx], 0
-    jmp input_proc
+
 
 check_input:
     mov si, input_buffer
@@ -281,7 +252,7 @@ floppy_error:
 kernel_not_found_error:
     mov si, msg_kernel_not_found
     call puts
-    jmp wait_key_and_reboot
+    jmp mainloop
 
 wait_key_and_reboot:
     mov ah, 0
@@ -298,28 +269,7 @@ wait_key_and_reboot:
 ; Params:
 ;   - ds:si points to string
 ;
-puts:
-    ; save registers we will modify
-    push si
-    push ax
-    push bx
 
-.loop:
-    lodsb               ; loads next character in al
-    or al, al           ; verify if next character is null?
-    jz .done
-
-    mov ah, 0x0E        ; call bios interrupt
-    mov bh, 0           ; set page number to 0
-    int 0x10
-
-    jmp .loop
-
-.done:
-    pop bx
-    pop ax
-    pop si    
-    ret
 
 ;
 ; Disk routines
