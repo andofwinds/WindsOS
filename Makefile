@@ -5,7 +5,7 @@ SRC_DIR=src
 TOOLS_DIR=tools
 BUILD_DIR=build
 
-.PHONY: all floppy_image kernel bootloader watersh microsh clean always tools_fat
+.PHONY: all floppy_image kernel bootloader watersh microsh binutils clean always tools_fat
 
 all: floppy_image tools_fat
 
@@ -14,13 +14,14 @@ all: floppy_image tools_fat
 #
 floppy_image: $(BUILD_DIR)/main_floppy.img
 
-$(BUILD_DIR)/main_floppy.img: bootloader kernel watersh microsh
+$(BUILD_DIR)/main_floppy.img: bootloader kernel watersh microsh binutils
 	dd if=/dev/zero of=$(BUILD_DIR)/main_floppy.img bs=512 count=2880
 	mkfs.fat -F 12 -n "FWOS" $(BUILD_DIR)/main_floppy.img
 	dd if=$(BUILD_DIR)/bootloader.bin of=$(BUILD_DIR)/main_floppy.img conv=notrunc
 	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/kernel.bin "::kernel.bin"
 	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/watersh.bin "::watersh.bin"
 	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/microsh.bin "::microsh.bin"
+	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/securemd.bin "::securemd.bin"
 	mcopy -i $(BUILD_DIR)/main_floppy.img test.txt "::test.txt"
 
 #
@@ -52,6 +53,13 @@ microsh: $(BUILD_DIR)/microsh.bin
 $(BUILD_DIR)/microsh.bin: always
 	$(ASM) $(SRC_DIR)/kernel/microsh.asm -f bin -o $(BUILD_DIR)/microsh.bin
 
+
+#
+# BINUTILS
+#
+binutils: $(BUILD_DIR)/securemd.bin
+$(BUILD_DIR)/securemd.bin: always
+	$(ASM) $(SRC_DIR)/bin/securemd.asm -f bin -o $(BUILD_DIR)/securemd.bin
 
 #
 # Tools

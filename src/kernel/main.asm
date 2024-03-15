@@ -39,16 +39,87 @@ start:
     mov si, msg_hello
     call puts
 
-    mov si, watershell
-    mov [current_shell], si
+    jmp shell
 
-    ; some BIOSes might start us at 07C0:0000 instead of 0000:7C00, make sure we are in the
-    ; expected location
-    push es
-    push word .after
-    retf
+    ;mov si, watershell
+    ;mov [current_file], si
+    ;push es
+    ;push word load_file
 
-.after:
+
+; ========================================SHELL============================================
+
+shell:
+    mov si, msg_watershell_started
+    call puts
+    jmp mainloop
+
+mainloop:
+    mov si, current_dir
+    call puts
+    mov si, prompt
+    call puts
+
+    call get_input
+
+get_input:
+    xor bx, bx
+    jmp input_proc
+
+input_proc:
+    xor ah, ah
+    int 0x16
+
+    cmp al, 0x0d
+    je check_input
+
+    cmp al, 0x8
+    je backspace
+
+    cmp al, 0x3
+    je enter_secure
+
+    mov ah, 0x0e
+    int 0x10
+    
+    mov [input_buffer+bx], al
+    inc bx
+
+    cmp bx, 64
+    je check_input
+
+    jmp input_proc
+
+enter_secure:
+    mov si, securemode
+    mov [current_file], si
+    call load_file
+
+backspace:
+    cmp bx, 0
+    je input_proc
+    mov ah, 0x0e
+    int 0x10
+    mov al, ' '
+    int 0x10
+    mov al, 0x8
+    int 0x10
+    dec bx
+    mov byte [input_buffer+bx], 0
+    jmp input_proc
+
+check_input:
+    mov si, input_buffer
+    mov [current_file], si
+    jmp load_file
+
+    cli
+    hlt
+
+; ========================================FAT TOOLS========================================
+
+load_file:  ; IN:
+            ;   [current_file] - FILENAME
 
     ; read something from floppy disk
     ; BIOS should set DL to drive number
@@ -106,7 +177,7 @@ start:
     mov di, buffer
 
 .search_kernel:
-    mov si, [current_shell]
+    mov si, [current_file]
     mov cx, 11                          ; compare up to 11 characters
     push di
     repe cmpsb
@@ -357,17 +428,22 @@ disk_reset:
     ret
 
 
-msg_hello:              db ENDL, ENDL, 'Welcome to Forsaken WindsOS!', ENDL, ENDL, 0
-msg_loading:            db 'Loading selected shell', ENDL, 0
+%include "src/kernel/index.asm"
+msg_hello:              db ENDL, ENDL, 'Welcome to Forsaken WindsOS!', ENDL, 0
+msg_watershell_started: db 'WaterShell v1.3', ENDL, '<==========>', ENDL, ENDL, ENDL, 0
+msg_loading:            db ENDL, 'Loading selected file....', ENDL, 0
 msg_read_failed:        db 'Read from disk failed!', ENDL, 0
 msg_kernel_not_found:   db 'file not found!', ENDL, 0
-watershell:             db 'WATERSH BIN'
-microshell:             db 'MICROSH BIN'
 
-current_shell           times 11 db 0
+NEWLINE:                db ENDL, 0
 
-kernel_cluster:         dw 0          ;'
+current_file:           times 11 db 0
+input_buffer:           times 64 db 0
 
+current_dir:            db "~", 0
+prompt:                 db ">> ", 0
+
+kernel_cluster:         dw 0
 KERNEL_LOAD_SEGMENT     equ 0x3000
 KERNEL_LOAD_OFFSET      equ 0
 
