@@ -61,7 +61,7 @@ input_proc:
     je enter_secure
 
     mov ah, 0x0e
-    call to_upper_case
+    ;call to_upper_case
     int 0x10
     
     mov [input_buffer+bx], al
@@ -77,15 +77,29 @@ enter_secure:
     mov [current_file], si
     call load_file
 
-
+    ret
 
 check_input:
-    mov si, input_buffer
-    mov [current_file], si
-    jmp load_file
+    inc bx
+    mov byte [input_buffer+bx], 0
 
-    cli
-    hlt
+    cmp bx, 12
+    jb .exec_fat
+
+    jmp mainloop
+
+.exec_fat:
+
+    mov si, input_buffer
+    call command_to_fatname
+
+
+
+    mov si, file_buffer
+    mov [current_file], si
+    call load_file
+
+    ret 
 
 ; ========================================FAT TOOLS========================================
 
@@ -247,7 +261,7 @@ load_file:  ; IN:
 floppy_error:
     mov si, msg_read_failed
     call puts
-    jmp wait_key_and_reboot
+    jmp mainloop
 
 kernel_not_found_error:
     mov si, msg_kernel_not_found
@@ -387,7 +401,6 @@ msg_kernel_not_found:   db 'file not found!', ENDL, 0
 
 NEWLINE:                db ENDL, 0
 
-current_file:           times 11 db 0
 input_buffer:           times 64 db 0
 
 current_dir:            db "~", 0
@@ -397,4 +410,6 @@ kernel_cluster:         dw 0
 KERNEL_LOAD_SEGMENT     equ 0x3000
 KERNEL_LOAD_OFFSET      equ 0
 
+current_file:           times 11 db 0
+file_buffer:            times 11 db 0
 buffer:

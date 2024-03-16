@@ -14,7 +14,7 @@ backspace:
 to_upper_case:  ; IN:
                 ;   AL - CHAR
                 ; OUT:
-                ;   STRING IN UPPER CASE
+                ;   AL - CHAR IN UPPER CASE
     push ax
     mov ah, 0x61
     cmp al, ah
@@ -33,7 +33,7 @@ to_upper_case:  ; IN:
 
 .set_val
     pop ax
-    and al, 11011111b
+    sub ax, 32
     ret
 
 
@@ -60,4 +60,88 @@ puts:   ; IN:
     pop bx
     pop ax
     pop si    
+    ret
+
+
+command_to_fatname: ; IN:
+                    ;   SI - Command (NNNNNNNN/nnnnnnnn)
+                    ; OUT:
+                    ;   [CURRENT_FILE] - Filename (NNNNNNNNEEE)
+
+
+    push ax
+    push bx
+    push cx
+    push dx
+
+    xor cx, cx
+    xor bx, bx
+
+.clear_cycle:
+    cmp bx, 11
+    je .after_clear
+
+    mov byte [file_buffer+bx], ' '
+
+    inc bx
+    jmp .clear_cycle
+
+.after_clear:
+    mov bx, 0
+    mov dx, 0
+
+.loop:
+    lodsb
+    or al, al
+    jz .done
+
+    ;push ax
+        call to_upper_case
+        mov byte [file_buffer+bx], al
+    ;pop ax
+
+    ;mov [current_file+bx], cx
+
+    inc bx
+    jmp .loop
+
+
+.done:
+    mov byte [file_buffer+bx], 0
+
+    mov cx, 8
+    sub cx, bx
+
+.fill_spaces:
+    cmp cx, 0
+    je .add_ext
+
+    mov byte [file_buffer+bx], ' '
+
+    dec cx
+    inc bx
+
+    jmp .fill_spaces
+
+.add_ext:   ; I'm too lazy to add another cycle :)
+    ;mov dx, 'B'
+    mov byte [file_buffer+bx], 'B'
+    inc bx
+    ;mov dx, 'I'
+    mov byte [file_buffer+bx], 'I'
+    inc bx
+    ;mov dx, 'N'
+    mov byte [file_buffer+bx], 'N'
+    inc bx
+    ;mov dx, 0
+    mov byte [file_buffer+bx], 0
+
+
+.return:
+
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+
     ret
