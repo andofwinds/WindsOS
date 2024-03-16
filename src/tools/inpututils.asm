@@ -39,17 +39,20 @@ to_upper_case:  ; IN:
 
 puts:   ; IN:
         ;   DS:SI - INPUT
+        ;   DL - Color
 
     ; save registers we will modify
     push si
     push ax
     push bx
+    push dx
 
 .loop:
     lodsb               ; loads next character in al
     or al, al           ; verify if next character is null?
     jz .done
 
+    mov bl, 0xFF
     mov ah, 0x0E        ; call bios interrupt
     mov bh, 0           ; set page number to 0
     int 0x10
@@ -57,6 +60,36 @@ puts:   ; IN:
     jmp .loop
 
 .done:
+    pop dx
+    pop bx
+    pop ax
+    pop si    
+    ret
+
+puts_color:     ; IN:
+                ;   DS:SI - INPUT
+                ;   DL - Color
+
+    ; save registers we will modify
+    push si
+    push ax
+    push bx
+    push dx
+
+.loop:
+    lodsb               ; loads next character in al
+    or al, al           ; verify if next character is null?
+    jz .done
+
+    mov bl, dl
+    mov ah, 0x0E        ; call bios interrupt
+    mov bh, 0           ; set page number to 0
+    int 0x10
+
+    jmp .loop
+
+.done:
+    pop dx
     pop bx
     pop ax
     pop si    

@@ -154,13 +154,19 @@ load_file:  ; IN:
 ;
 
 floppy_error:
+    push dx
     mov si, msg_read_failed
-    call puts
+    mov dl, 0x4
+    call puts_color
+    pop dx
     jmp mainloop
 
 kernel_not_found_error:
+    push dx
     mov si, msg_kernel_not_found
-    call puts
+    mov dl, 0x4
+    call puts_color
+    pop dx
     jmp mainloop
 
 wait_key_and_reboot:

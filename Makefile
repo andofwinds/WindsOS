@@ -23,6 +23,7 @@ $(BUILD_DIR)/main_floppy.img: bootloader kernel binutils
 #	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/microsh.bin "::microsh.bin"
 	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/securemd.bin "::securemd.bin"
 	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/reboot.bin "::reboot.bin"
+	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/graphx.bin "::graphx.bin"
 	mcopy -i $(BUILD_DIR)/main_floppy.img test.txt "::test.txt"
 
 #
@@ -58,7 +59,7 @@ $(BUILD_DIR)/microsh.bin: always
 #
 # BINUTILS
 #
-binutils: securemd reboot
+binutils: securemd reboot graphx
 
 reboot: $(BUILD_DIR)/reboot.bin
 $(BUILD_DIR)/reboot.bin: always
@@ -68,6 +69,10 @@ $(BUILD_DIR)/reboot.bin: always
 securemd: $(BUILD_DIR)/securemd.bin
 $(BUILD_DIR)/securemd.bin: always
 	$(ASM) $(SRC_DIR)/bin/securemd.asm -f bin -o $(BUILD_DIR)/securemd.bin
+
+graphx: $(BUILD_DIR)/graphx.bin
+$(BUILD_DIR)/graphx.bin: always
+	$(ASM) $(SRC_DIR)/bin/graphx.asm -f bin -o $(BUILD_DIR)/graphx.bin
 
 #
 # Tools
