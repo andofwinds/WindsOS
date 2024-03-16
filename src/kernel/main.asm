@@ -99,9 +99,19 @@ check_input:
 
     mov si, input_buffer
     call command_to_fatname
+    push si
 
+.clear_input_buffer:
+    cmp bx, 0
+    je .continue
 
+    dec bx
+    mov byte [input_buffer+bx], ' '
+    jmp .clear_input_buffer
 
+.continue:
+
+    pop si
     mov si, file_buffer
     mov [current_file], si
     call load_file

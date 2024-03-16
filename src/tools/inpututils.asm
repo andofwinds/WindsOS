@@ -77,6 +77,8 @@ command_to_fatname: ; IN:
     xor cx, cx
     xor bx, bx
 
+    jmp .clear_cycle
+
 .clear_cycle:
     cmp bx, 11
     je .after_clear
@@ -87,6 +89,8 @@ command_to_fatname: ; IN:
     jmp .clear_cycle
 
 .after_clear:
+
+
     mov bx, 0
     mov dx, 0
 
@@ -100,14 +104,17 @@ command_to_fatname: ; IN:
         mov byte [file_buffer+bx], al
     ;pop ax
 
-    ;mov [current_file+bx], cx
+    ;push bx
+    ;    add bx, 3
+    ;    mov byte [file_buffer+bx], 0
+    ;pop bx
 
     inc bx
     jmp .loop
 
 
 .done:
-    mov byte [file_buffer+bx], 0
+    ;mov byte [file_buffer+bx], 0
 
     mov cx, 8
     sub cx, bx
@@ -138,6 +145,9 @@ command_to_fatname: ; IN:
 
 
 .return:
+
+    mov si, file_buffer
+    call puts
 
     pop dx
     pop cx
