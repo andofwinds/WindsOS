@@ -14,8 +14,12 @@ start:
     mov si, msg_hello
     call puts
 
+    xor ah, ah
+    int 0x16
+    jmp mainloop
+
 mainloop:
-    jmp .halt
+    
 
 .halt:
     cli
@@ -33,8 +37,8 @@ mainloop:
 
 %include "src/tools/fatutils.asm"
 
-msg_hello: db 'Hello world from SECUREMODE!', ENDL, 0
-msg_loading:            db ENDL, 'Loading selected file....', ENDL, 0
+msg_hello: db 'You are in WindsOS secure mode.', ENDL, 0
+NEWLINE:                db ENDL, 0
 msg_read_failed:        db 'Read from disk failed!', ENDL, 0
 msg_kernel_not_found:   db 'file not found!', ENDL, 0
 

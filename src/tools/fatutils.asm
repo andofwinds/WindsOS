@@ -6,7 +6,7 @@ load_file:  ; IN:
     mov [ebr_drive_number], dl
 
     ; show loading message
-    mov si, msg_loading
+    mov si, NEWLINE
     call puts
 
     ; read drive parameters (sectors per track and head count),

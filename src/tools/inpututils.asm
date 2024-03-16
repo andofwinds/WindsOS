@@ -146,9 +146,6 @@ command_to_fatname: ; IN:
 
 .return:
 
-    mov si, file_buffer
-    call puts
-
     pop dx
     pop cx
     pop bx

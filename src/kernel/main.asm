@@ -1,5 +1,5 @@
 ; NOTE:
-; * EXEC-CODES (in CX):
+; * EXEC-CODES (in AX):
 ;   * 0xE1 - Execute success
 
 org 0x0
@@ -20,15 +20,23 @@ nop
 
 
 start:
+    pop ax
+
+    cmp ax, 0xE1    ; Success
+    je .exec_success
+
+    jmp .default
+
+.exec_success:
+
+    jmp mainloop
+
+.default:
     mov si, msg_hello
     call puts
 
     jmp shell
 
-    ;mov si, watershell
-    ;mov [current_file], si
-    ;push es
-    ;push word load_file
 
 
 ; ========================================SHELL============================================
@@ -55,16 +63,16 @@ input_proc:
     xor ah, ah
     int 0x16
 
-    cmp al, 0x0d
+    cmp al, 0x0d    ; Enter
     je check_input
 
-    cmp al, 0x8
+    cmp al, 0x8     ; Backspace
     je backspace
 
-    cmp al, 0x3
+    cmp al, 0x3     ; Ctrl+C
     je enter_secure
 
-    mov ah, 0x0e
+    mov ah, 0x0e    ; Anything else
     ;call to_upper_case
     int 0x10
     
@@ -126,7 +134,6 @@ check_input:
 %include "src/kernel/index.asm"
 msg_hello:              db ENDL, ENDL, 'Welcome to Forsaken WindsOS!', ENDL, 0
 msg_watershell_started: db 'WaterShell v1.3', ENDL, '<==========>', ENDL, ENDL, ENDL, 0
-msg_loading:            db ENDL, 'Loading selected file....', ENDL, 0
 msg_read_failed:        db 'Read from disk failed!', ENDL, 0
 msg_kernel_not_found:   db 'file not found!', ENDL, 0
 
