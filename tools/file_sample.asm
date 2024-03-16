@@ -1,3 +1,5 @@
+; A standart sample for files
+
 org 0x0
 bits 16
 
@@ -9,31 +11,26 @@ nop
 %include "src/tools/bpb.asm"
 %include "src/kernel/index.asm"
 
+
 start:
-    ; print hello world message
-    mov si, msg_hello
-    call puts
+
+
+    jmp mainloop
+
 
 mainloop:
-    jmp .halt
+    jmp halt
 
-.halt:
+halt:
     cli
     hlt
 
 
 
 %include "src/tools/inpututils.asm"
-; inpututils just needs this
-    input_proc:
-        jmp start
-    input_buffer: times 64 db 0
-
-    
-
 %include "src/tools/fatutils.asm"
 
-msg_hello: db 'Hello world from SECUREMODE!', ENDL, 0
+msg_hello: db 'Hello world from [FILENAME]!', ENDL, 0
 msg_loading:            db ENDL, 'Loading selected file....', ENDL, 0
 msg_read_failed:        db 'Read from disk failed!', ENDL, 0
 msg_kernel_not_found:   db 'file not found!', ENDL, 0
