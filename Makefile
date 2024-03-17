@@ -23,7 +23,7 @@ $(BUILD_DIR)/main_floppy.img: bootloader kernel binutils
 #	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/microsh.bin "::microsh.bin"
 	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/securemd.bin "::securemd.bin"
 	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/reboot.bin "::reboot.bin"
-	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/graphx.bin "::graphx.bin"
+#	mcopy -i $(BUILD_DIR)/main_floppy.img $(BUILD_DIR)/graphx.bin "::graphx.bin"
 	mcopy -i $(BUILD_DIR)/main_floppy.img test.txt "::test.txt"
 
 #

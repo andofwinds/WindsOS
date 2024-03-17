@@ -19,7 +19,11 @@ start:
     jmp mainloop
 
 mainloop:
-    
+    mov si, test_txt
+    mov [current_file], si
+    call read_file
+
+    call puts
 
 .halt:
     cli
@@ -32,8 +36,6 @@ mainloop:
     input_proc:
         jmp start
     input_buffer: times 64 db 0
-
-    
 
 %include "src/tools/fatutils.asm"
 

@@ -174,13 +174,22 @@ check_input:
     mov si, NEWLINE
     call puts
 
-    jmp mainloop
+    jmp .clear_and_jump_to_mainloop
+
+.clear_and_jump_to_mainloop:
+    cmp bx, 0
+    je mainloop
+
+    dec bx
+    mov byte [input_buffer+bx], ' '
+    jmp .clear_and_jump_to_mainloop
 
 .exec_fat:
 
     mov si, input_buffer
     call command_to_fatname
     push si
+    mov bx, 11
 
 .clear_input_buffer:
     cmp bx, 0
@@ -209,7 +218,7 @@ msg_hello:              db ENDL, ENDL, 'Welcome to Forsaken WindsOS!', ENDL, 0
 msg_watershell_started: db 'WaterShell v1.8', ENDL, 0
 separator:              db '<==========>', 0
 msg_read_failed:        db 'FAT: Read from disk failed!', ENDL, 0
-msg_kernel_not_found:   db 'FAT: File not found!', ENDL, 0
+msg_kernel_not_found:   db 'FAT: Binary file not found!', ENDL, 0
 
 NEWLINE:                db ENDL, 0
 

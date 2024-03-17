@@ -113,7 +113,7 @@ command_to_fatname: ; IN:
     jmp .clear_cycle
 
 .clear_cycle:
-    cmp bx, 11
+    cmp bx, 64
     je .after_clear
 
     mov byte [file_buffer+bx], ' '

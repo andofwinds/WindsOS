@@ -26,6 +26,7 @@ start:
     mov dx, 175
     int 0x10
 
+    mov al, 0xFF
     call draw_cursor
 
     jmp mainloop
@@ -67,7 +68,8 @@ init_workspace:
 
 
 .after_x:
-    ret
+    jmp mainloop
+
 
 
 mainloop:
@@ -85,6 +87,18 @@ mainloop:
 
     cmp ah, 0x50    ; Down arrow
     je .down_arrow
+
+    cmp al, 'w'
+    je .cursor_up
+
+    cmp al, 's'
+    je .cursor_down
+
+    ;cmp al, 'a'
+    ;je .cursor_left
+
+    ;cmp al, 'd'
+    ;je .cursor_right
 
     jmp mainloop
 
@@ -109,7 +123,43 @@ mainloop:
     add dx, 1
     jmp write
 
+
+.cursor_up:
+    mov si, msg_up
+    call puts
+
+    ; Clear old cursor
+    sub dx, 5
+    mov al, 0x00
+    call draw_cursor
+
+    ; Print new cursor
+
+    sub dx, 8
+    mov al, 0xFF
+    call draw_cursor
+
+    jmp mainloop
+
+.cursor_down:
+    mov si, msg_down
+    call puts
+
+    ; Clear old cursor
+    add dx, 5
+    mov al, 0x7
+    call draw_cursor
+
+    ; Print new cursor
+
+    add dx, 8
+    mov al, 0xFF
+    call draw_cursor
+
+    jmp mainloop
+
 write:
+
     mov ah, 0x0c
     mov al, 0xFF
     xor bh, bh
@@ -118,9 +168,9 @@ write:
     jmp mainloop
 
 
-draw_cursor:
+draw_cursor:    ; IN:
+                ;   AL - Color
     mov ah, 0x0c
-    mov al, 0xFF
     xor bh, bh
     xor si, si
 
